@@ -12,7 +12,7 @@ def mesh_init
       elsif i==$mesh_size
         mesh[i][j] = $Ta
       else
-        mesh[i][j] = 0.0
+        mesh[i][j] = $Ta
       end 
     end
   end    
@@ -21,8 +21,23 @@ def mesh_init
 
 end
 
+def get_mesh mesh
+
+  m = []
+  for i in (0..$mesh_size)
+    m[i] = []
+    for  j in (0..$mesh_size)      
+        m[i][j] = mesh[i][j]  
+    end
+  end    
+
+  return m
+
+end
+
 def solve_mesh mesh
 
+    m = get_mesh(mesh)
     for i in (1..$mesh_size-1)
       for j in (1..$mesh_size-1)
         mesh[i][j] = 0.25 * (mesh[i][j-1] + mesh[i][j+1] + mesh[i-1][j] + mesh[i+1][j])
@@ -33,19 +48,19 @@ def solve_mesh mesh
 
 end
 
-def yet_to_converge mesh , mesh_copy
+# def yet_to_converge mesh , mesh_copy
 
-  for i in  (1..$mesh_size-1)
-    for j in (1..$mesh_size-1)
-      if (((mesh[i][j] - mesh_copy[i][j]) / mesh[i][j]).abs > $tolerance_value)
-        return true
-      end
-    end
-  end
+#   for i in  (1..$mesh_size-1)
+#     for j in (1..$mesh_size-1)
+#       if (((mesh[i][j] - mesh_copy[i][j]) / mesh[i][j]).abs > $tolerance_value)
+#         return true
+#       end
+#     end
+#   end
 
-  return false
+#   return false
 
-end
+# end
 
 def write_into_csv mesh , filename
 
@@ -71,20 +86,6 @@ def write_into_csv mesh , filename
 
   puts "Successfully stored mesh values into excel file - #{filename}."
     
-end
-
-def get_mesh mesh
-
-  m = []
-  for i in (0..$mesh_size)
-    m[i] = []
-    for  j in (0..$mesh_size)      
-        m[i][j] = mesh[i][j]  
-    end
-  end    
-
-  return m
-
 end
 
 def get_temp
@@ -162,31 +163,37 @@ end
 
 $height = 1.0
 $length = 1.5
-$mesh_size = 200.0
+$mesh_size = 100.0
 $To = 100.0
 $Ta = 120.0
-$tolerance_value = 0.001
-k = 1
+$iterate_count = 3000
 mesh = mesh_init()
-mesh_copy = get_mesh(mesh)
-puts "Successfully created a mesh of size #{$mesh_size} x #{$mesh_size}."
-
+puts "\nSuccessfully created a mesh of size #{$mesh_size} x #{$mesh_size}.\n"
+value_list = []
+theory_mesh = get_temp()
 mesh = solve_mesh(mesh)
 
-while yet_to_converge(mesh,mesh_copy)
-  mesh_copy = get_mesh(mesh)
+# while yet_to_converge(mesh,mesh_copy)
+for o in 1..$iterate_count
   mesh = solve_mesh(mesh)
-  puts "[Iteration] #{k} successfully completed."
-  k = k+1
+  puts "[Iteration] #{o} successfully completed."
+  value_list.push(get_difference(mesh,theory_mesh))
 end  
-puts "\nTook #{k-1} iterations to solve the mesh of size #{$mesh_size} x #{$mesh_size}, with tolerance level of #{$tolerance_value*100}%. "
 
-theory_mesh = get_temp()
-# value = get_difference(mesh,theory_mesh)
+puts "\nSuccessfully created a mesh of size #{$mesh_size} x #{$mesh_size}.\n"
+
 
 write_into_csv(mesh,"numerical_analysis.csv")
 write_into_csv(theory_mesh,"theoretical_analysis.csv")
 write_into_json("numerical_analysis.csv")
 write_into_json("theoretical_analysis.csv")
 
-# puts "\n\n DIFFERENCE : #{value}"
+min_diff_iteration , min_diff = value_list.find_index(value_list.sort[0])-1 , value_list.sort[0]
+
+for o in 1..min_diff_iteration
+  mesh = solve_mesh(mesh_init())
+  puts "[Iteration] #{o} successfully completed."
+end  
+
+puts "\nTOTAL DIFFERENCE IN TEMPERATURE BETWEEN NODES OF Numerical Analysis & Theoretical Analysis : #{min_diff}."
+puts "\nAVERAGE DIFFERENCE / NODE : #{min_diff/($mesh_size*$mesh_size)}.\n\n"
