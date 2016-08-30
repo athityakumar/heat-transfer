@@ -185,9 +185,9 @@ puts "\nSuccessfully created a mesh of size #{$mesh_size} x #{$mesh_size}.\n"
 
 
 min_diff_iteration , min_diff = value_list.find_index(value_list.sort[0])-1 , value_list.sort[0]
-
+mesh = mesh_init()
 for o in 1..min_diff_iteration
-  mesh = solve_mesh(mesh_init())
+  mesh = solve_mesh(mesh)
   puts "[Iteration] #{o} successfully completed."
 end  
 
