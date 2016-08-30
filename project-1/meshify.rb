@@ -183,10 +183,6 @@ end
 puts "\nSuccessfully created a mesh of size #{$mesh_size} x #{$mesh_size}.\n"
 
 
-write_into_csv(mesh,"numerical_analysis.csv")
-write_into_csv(theory_mesh,"theoretical_analysis.csv")
-write_into_json("numerical_analysis.csv")
-write_into_json("theoretical_analysis.csv")
 
 min_diff_iteration , min_diff = value_list.find_index(value_list.sort[0])-1 , value_list.sort[0]
 
@@ -194,6 +190,12 @@ for o in 1..min_diff_iteration
   mesh = solve_mesh(mesh_init())
   puts "[Iteration] #{o} successfully completed."
 end  
+
+write_into_csv(mesh,"numerical_analysis.csv")
+write_into_csv(theory_mesh,"theoretical_analysis.csv")
+write_into_json("numerical_analysis.csv")
+write_into_json("theoretical_analysis.csv")
+
 
 puts "\nTOTAL DIFFERENCE IN TEMPERATURE BETWEEN NODES OF Numerical Analysis & Theoretical Analysis : #{min_diff}."
 puts "\nAVERAGE DIFFERENCE / NODE : #{min_diff/($mesh_size*$mesh_size)}.\n\n"
